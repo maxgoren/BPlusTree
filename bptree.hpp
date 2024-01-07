@@ -4,9 +4,7 @@
 #include <queue>
 #include "bpnode.hpp"
 #include "bpiterator.hpp"
-using std::cout;
-using std::endl;
-using std::queue;
+using namespace std;
 
 template <class K, class V>
 class BPTree {
@@ -22,21 +20,23 @@ class BPTree {
             int i, j;
             bpentry nent = bpentry(key, value, nullptr);
             if (ht == 0) {
-                j = node->floor(key);
+                return node->insert(nent);
             } else {
-                for (j = 0; j < node->size(); j++) {
-                    if (j+1 == node->size() || key < node->at(j+1).key) {
-                        bpnode* result = insert(node->at(j++).child, key, value, ht-1);
-                        if (result == nullptr) {
-                            return nullptr;
-                        } else {
-                            nent = bpentry(result->at(0).key, nullItem, result);
-                            break;
-                        }
-                    }
-                }
+                j = node->floor(key);
+                bpnode* result = insert(node->at(j++).child, key, value, ht-1);
+                if (result == nullptr) return nullptr;
+                nent = bpentry(result->at(0).key, nullItem, result);
             }
             return node->insertAt(nent, j);
+        }
+        iterator search(bpnode* node, K key, int ht) {
+            int i, j;
+            if (ht == 0) {
+                j = node->search(key);
+                if (j > -1) return iterator(node, j);
+                else return end();
+            }
+            return search(node->at(node->floor(key)).child, key, ht-1);
         }
         bpnode* min(bpnode* node, int ht) {
             if (ht == 0)
@@ -62,6 +62,9 @@ class BPTree {
                 root->at(1) = bpentry(tmp->at(0).key, nullItem, tmp);
                 height++;
             }
+        }
+        iterator find(K key) {
+            return search(root, key, height);
         }
         void sorted() {
             for(bpnode* it = min(root, height); it != nullptr; it = it->rightSibling()) {

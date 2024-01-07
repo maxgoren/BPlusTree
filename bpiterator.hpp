@@ -2,8 +2,7 @@
 #define bpiterator_hpp
 #include <iostream>
 #include "bpnode.hpp"
-using std::pair;
-using std::make_pair;
+using namespace std;
 
 template <class K, class V>
 class BPIterator {
@@ -27,9 +26,25 @@ class BPIterator {
             }
             return *this;
         }
+        BPIterator operator--() {
+            if (node != nullptr) {
+                if (pos-1 < 0) {
+                    node = node->leftSibling();
+                    if (node) pos = node->size()-1;
+                } else {
+                    pos--;
+                }
+            }
+            return *this;
+        }
         BPIterator operator++(int) {
             BPIterator it = *this;
             ++*this;
+            return it;
+        }
+        BPIterator operator--(int) {
+            BPIterator it = *this;
+            --*this;
             return it;
         }
         bool operator==(const BPIterator& it) const {
