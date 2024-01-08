@@ -17,18 +17,20 @@ class BPTree {
         int height;
         K nullKey;
         V nullItem;
-        bpnode* insert(bpnode* node, K key, V value, int ht) {
+        void insert(bpnode* node, K key, V value, int ht) {
             int i, j;
             bpentry nent = bpentry(key, value, nullptr);
             if (ht == 0) {
-                return node->insert(nent);
-            } else {
-                j = node->floor(key);
-                bpnode* result = insert(node->at(j++).child, key, value, ht-1);
-                if (result == nullptr) return nullptr;
-                nent = bpentry(result->at(0).key, nullItem, result);
+                node->insert(nent);
+                return;
             }
-            return node->insertAt(nent, j);
+            j = node->floor(key);
+            if (node->at(j).child->isFull()) {
+                bpnode* nn = node->at(j).child->split();
+                nent = bpentry(nn->at(0).key, nullItem, nn);
+                node->insert(nent);
+            }
+            insert(node->at(j).child, key, value, ht-1);
         }
         iterator search(bpnode* node, K key, int ht) {
             int i, j;
@@ -97,9 +99,9 @@ class BPTree {
             root = erase(root, key, height);
         }
         void insert(K key, V value) {
-            bpnode* tmp = insert(root, key, value, height);
-            if (tmp != nullptr) {
-                split_root(tmp);
+            insert(root, key, value, height);
+            if (root->isFull()) {
+                split_root(root->split());
             }
             count++;
         }
@@ -113,7 +115,6 @@ class BPTree {
             bpnode* x = root;
             while (ht >= 0) {
                 cout<<"[ ";
-                for (int g = 0; g < x->size(); g++) cout<<"   ";
                 for(bpnode* it = x; it != nullptr; it = it->rightSibling()) {
                     cout<<"(";
                     if (method == 0) {
