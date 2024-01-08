@@ -59,13 +59,11 @@ class BPNode {
             next = nn;
             return nn;
         }
-        BPNode* insertAt(bpentry& entry, int j) {
+        void insertAt(bpentry& entry, int j) {
             for (int i = n; i > j; i--)
                 page[i] = page[i-1];
             page[j] = entry;
             n++;
-            if (isFull()) return split();
-            else return nullptr;
         }
         BPNode* removeAt(int j) {
             for (int i = j; i < n; i++)
@@ -73,16 +71,14 @@ class BPNode {
             n--;
             return this;
         }
-        BPNode* insert(bpentry& entry) {
+        void insert(bpentry& entry) {
             int j = n;
-            while (j > 0 && page[j-1].key >= entry.key) {
+            while (j > 0 && page[j-1].key > entry.key) {
                 page[j] = page[j - 1];
                 j--;
             }
             page[j] = entry;
             n++;
-            if (isFull()) return split();
-            else return nullptr;
         }
         bpentry& at(int j) {
             return page[j];
