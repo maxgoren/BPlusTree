@@ -26,6 +26,7 @@ class BPNode {
         BPNode *next, *prev;
     public:
         BPNode(int k = 0) : n(k) { }
+        ~BPNode() {        }
         int size() const {
             return n;
         }
@@ -66,9 +67,15 @@ class BPNode {
             if (isFull()) return split();
             else return nullptr;
         }
+        BPNode* removeAt(int j) {
+            for (int i = j; i < n; i++)
+                page[j] = page[j+1];
+            n--;
+            return this;
+        }
         BPNode* insert(bpentry& entry) {
             int j = n;
-            while (j > 0 && page[j-1].key > entry.key) {
+            while (j > 0 && page[j-1].key >= entry.key) {
                 page[j] = page[j - 1];
                 j--;
             }
