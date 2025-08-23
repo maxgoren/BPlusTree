@@ -4,24 +4,24 @@
 #include "bpnode.hpp"
 using namespace std;
 
-template <class K, class V>
+template <class K, class V, int M>
 class BPIterator {
     private:
-        using bpnode = BPNode<K,V>;
+        using bpnode = BPNode<K,V,M>;
         bpnode* node;
         int pos;
     public:
         BPIterator(bpnode* ptr, int idx) : node(ptr), pos(idx) { }
-        pair<K,V> operator*() {
-            return make_pair(node->at(pos).key, node->at(pos).value);
+        KVPair<K,V> operator*() {
+            return node->page[pos].info;
         }
         BPIterator operator++() {
             if (node != nullptr) {
-                if (pos+1 < node->size())
+                if (pos+1 < node->n)
                     pos++;
                 else {
                     pos = 0;
-                    node = node->rightSibling();
+                    node = node->next;
                 }
             }
             return *this;
@@ -29,8 +29,8 @@ class BPIterator {
         BPIterator operator--() {
             if (node != nullptr) {
                 if (pos-1 < 0) {
-                    node = node->leftSibling();
-                    if (node) pos = node->size()-1;
+                    node = node->prev;
+                    if (node) pos = node->n-1;
                 } else {
                     pos--;
                 }

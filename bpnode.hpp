@@ -1,98 +1,69 @@
 #ifndef bpnode_hpp
 #define bpnode_hpp
-#include <iostream>
-using namespace std;
+#include "orderedpair.hpp"
+template <class K, typename V, int M>
+struct BPNode;
 
-const int M = 4;
-
-template <class K, class V>
-class BPNode;
-
-template <class K, class V>
-struct BPEntry {
-    K key;
-    V value;
-    BPNode<K,V>* child;
-    BPEntry(K k = K(), V val = V(), BPNode<K,V>* c = nullptr) 
-    : key(k), value(val), child(c) { }
+template <class K, typename V, int M>
+struct Entry {
+    KVPair<K,V> info;
+    BPNode<K,V,M>* child;
+    Entry(K key, V value) : info(key, value), child(nullptr) { }
+    Entry(K key, BPNode<K,V,M>* n) : info(key, V()), child(n) { }
+    Entry() { }
 };
 
-template <class K, class V>
-class BPNode {
-    private:
-        using bpentry = BPEntry<K,V>;
-        bpentry page[M];
-        int n;
-        BPNode *next, *prev;
-    public:
-        BPNode(int k = 0) : n(k) { }
-        ~BPNode() {        }
-        int size() const {
-            return n;
+template <class K, class V, int M>
+struct BPNode {
+    Entry<K,V,M> page[M];
+    int subsize[M];
+    int n;
+    BPNode* next;
+    BPNode* prev;
+    BPNode(int m) : n(m), next(nullptr), prev(nullptr) {
+        for (int i = 0; i < M; i++)
+            subsize[i] = 0;
+     }
+    bool isFull() const {
+        return n == M;
+    }
+    bool isEmpty() const {
+        return n == 0;
+    }
+    int size() const {
+        return n;
+    }
+    BPNode* insertAt(Entry<K,V,M>& entry, int index) {
+        for (int j = n; j > index; j--) {
+            page[j] = page[j-1];
         }
-        int isFull() {
-            return !(n < M);
+        page[index] = entry;
+        n++;
+        return this;
+    }
+    void eraseAt(int idx) {
+        for (int j = idx; j < n-1; j++) {
+            page[j] = page[j+1];
         }
-        int floor(K key) {
-            int j;
-            for (j = 0; j < n; j++)
-                if (j+1 == n || key < page[j+1].key)
-                    break;
-            return j;
+        n--;
+    }
+    int floor(K key) {
+        int i;
+        for (i = 0; i < n; i++) {
+            if (i+1 == n || key < page[i+1].info.key())
+                break;
         }
-        int search(K key) {
-            int j;
-            for (j = 0; j < n; j++)
-                if (key == page[j].key)
-                    return j;
-            return -1;
+        return i;
+    }
+    int find(K key) {
+        int i = 0;
+        while (i < n) {
+            if (key == page[i].info.key())
+                return i;
+            i++;
         }
-        BPNode* split() {
-            BPNode<K,V>* nn = new BPNode<K,V>(M/2);
-            for (int i = 0; i < M/2; i++) {
-                nn->page[i] = page[(M/2)+i];
-            }
-            n = M/2;
-            nn->next = next;
-            if (next) next->prev = nn;
-            nn->prev = this;
-            next = nn;
-            return nn;
-        }
-        BPNode* insertAt(bpentry& entry, int j) {
-            for (int i = n; i > j; i--)
-                page[i] = page[i-1];
-            page[j] = entry;
-            n++;
-            if (isFull()) return split();
-            else return nullptr;
-        }
-        BPNode* removeAt(int j) {
-            for (int i = j; i < n; i++)
-                page[j] = page[j+1];
-            n--;
-            return this;
-        }
-        BPNode* insert(bpentry& entry) {
-            int j = n;
-            while (j > 0 && page[j-1].key >= entry.key) {
-                page[j] = page[j - 1];
-                j--;
-            }
-            page[j] = entry;
-            n++;
-            if (isFull()) return split();
-            else return nullptr;
-        }
-        bpentry& at(int j) {
-            return page[j];
-        }
-        BPNode* rightSibling() {
-            return next;
-        }
-        BPNode* leftSibling() {
-            return prev;
-        }
+        return -1;
+    }
 };
 
 #endif
