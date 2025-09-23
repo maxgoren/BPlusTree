@@ -175,7 +175,14 @@ class BPlusTree {
             }
         }
         link clone(link h) {
-
+            if (h == nullptr) 
+                return nullptr;
+            link tmp = new node(h->n);
+            for (int i = 0; i < h->n; i++) {
+                tmp->page[i] = h->page[i];
+                tmp->page[i].child = clone(h->page[i].child);
+            }
+            return tmp;
         }
     public:
         BPlusTree(bool enforce_unique = false) {
@@ -188,7 +195,25 @@ class BPlusTree {
             cleanUp(root);
         }
         BPlusTree(const BPlusTree& bpt) {
-
+            root = clone(bpt.root);
+            count = bpt.count;
+            height = bpt.height;
+            NO_DUPLICATES = bpt.NO_DUPLICATES;
+        }
+        BPlusTree& operator=(const BPlusTree& bpt) {
+            if (this != &bpt) {
+                cleanUp(root);
+                root = clone(bpt.root);
+                count = bpt.count;
+                height = bpt.height;
+                NO_DUPLICATES = bpt.NO_DUPLICATES;
+            }
+            return *this;
+        }
+        KVPair<K,V>& operator[](K key) {
+            auto it = search(root, key);
+            if (it == end()) insert(key, V());
+            return (*search(root, key)).info;
         }
         int size() {
             return count;
@@ -219,8 +244,8 @@ class BPlusTree {
         }
         queue<K> keysInRange(K lo, K hi) {
             queue<K> keys;
-            auto itr = bpt.select(bpt.rank('h'));
-            auto endIt = bpt.select(bpt.rank('s'));
+            auto itr = select(rank('h'));
+            auto endIt = select(rank('s'));
             while ( itr != endIt) {
                 keys.push((*itr).key());
                 itr++;
