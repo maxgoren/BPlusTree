@@ -1,5 +1,5 @@
-# BPlusTree
-An in-memory B+ Tree in C++
+# B+ Tree w/ Order Statistics
+An in-memory B+ Tree Symbol Table in C++
 
 Maintains perfectly balanced m-way search tree with all leaf nodes at the same level.
 Internal nodes are an Index containing keys which guide the search to the data-storing leaf nodes
@@ -14,9 +14,11 @@ Both insertion and deletion are performed bottom-up.
     erase(K key)           - Remove the value indexed by key
 
 ### Search Operations
-    get(K key)             - Return the entry indexed by key, if it exists. Returns empty KVPair on search failure.
-    select(int rank)       - Returns the ith element in sorted order from the entry set.
-
+    get(K key)             - Returns an Iterator to the entry indexed by key, if it exists. Returns end() on search failure.
+    select(int rank)       - Returns an Iterator to the ith element in sorted order from the entry set.
+    rank(K key)            - Returns the rank of supplied key
+    keysInRange(K hi, K lo) - Returns a Queue containing the keys which fall within the supplied range.
+    
 ### Population Queries
     size()                 - Returns the number of entries in the tree
     empty()                - Determines if tree is empty.
